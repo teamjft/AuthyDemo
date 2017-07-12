@@ -1,7 +1,7 @@
-import authydemo.MyLoginEventListener
+import authydemo.LoginEventListener
 import authydemo.SecUserPasswordEncoderListener
 // Place your Spring DSL code here
 beans = {
     secUserPasswordEncoderListener(SecUserPasswordEncoderListener, ref('hibernateDatastore'))
-    myLoginEventListener(MyLoginEventListener)
+    loginEventListener(LoginEventListener)
 }

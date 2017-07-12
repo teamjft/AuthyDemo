@@ -5,7 +5,7 @@ import org.springframework.context.ApplicationEvent
 import org.springframework.context.ApplicationListener
 import org.springframework.security.authentication.event.InteractiveAuthenticationSuccessEvent
 
-class MyLoginEventListener implements ApplicationListener {
+class LoginEventListener implements ApplicationListener {
 
     void onApplicationEvent(ApplicationEvent event) {
         //Login event capture for sending the security code

@@ -6,7 +6,9 @@ import org.springframework.messaging.simp.SimpMessagingTemplate
 
 class RegistrationController {
 
-    static allowedMethods = [save: 'POST', verifyCode: 'POST', resendVerificationCode: 'POST', resendVerificationCodeViaCall: 'POST']
+    static allowedMethods = [save: 'POST', verifyCode: 'POST', resendVerificationCode: 'POST',
+                             resendVerificationCodeViaCall: 'POST', oneTouchAuthenticationRequest: 'POST',
+                             oneTouchCallback:'POST', checkOTStatus: 'POST']
 
     def springSecurityService
     def registrationService

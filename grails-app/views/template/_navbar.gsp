@@ -7,9 +7,16 @@
 				<span class="icon-bar"></span>
 				<span class="icon-bar"></span>
 			</button>
-			<a class="navbar-brand" href="/">
-				<i class="fa grails-icon"><asset:image src="grails-cupsonly-logo-white.svg" /></i> Authy Demo
-			</a>
+			<g:if test="${params.controller != 'twilio'}">
+				<a class="navbar-brand" href="/">
+					<i class="fa grails-icon"><asset:image src="grails-cupsonly-logo-white.svg" /></i> Authy Demo
+				</a>
+			</g:if>
+			<g:else>
+				<a class="navbar-brand" href="${g.createLink(controller: 'twilio')}">
+					<i class="fa grails-icon"><asset:image src="grails-cupsonly-logo-white.svg" /></i> Twilio Demo
+				</a>
+			</g:else>
 		</div>
 
 		<div class="navbar-collapse collapse" aria-expanded="false" style="height: 1px;">
