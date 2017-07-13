@@ -4,6 +4,7 @@ import com.twilio.Twilio
 import com.twilio.base.ResourceSet
 import com.twilio.rest.api.v2010.account.Message
 import com.twilio.rest.api.v2010.account.MessageCreator
+import com.twilio.rest.api.v2010.account.MessageReader
 import com.twilio.type.PhoneNumber
 import grails.transaction.Transactional
 
@@ -30,7 +31,10 @@ class TwilioService {
 
     def messages() {
         Twilio.init(grailsApplication.config.authy.accountSID, grailsApplication.config.authy.authToken)
-        ResourceSet<Message> messages = Message.reader().read()
+        MessageReader messageReader = Message.reader()
+//        messageReader.setTo(new PhoneNumber("+918826590094"))
+//        messageReader.setFrom(new PhoneNumber("+918826590094"))
+        ResourceSet<Message> messages = messageReader.read()
         return messages
     }
 

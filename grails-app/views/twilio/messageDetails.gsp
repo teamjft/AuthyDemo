@@ -11,8 +11,8 @@
 <table class="table table-striped table-bordered">
 	<tr><td>SID</td><td>${message.sid}</td></tr>
 	<tr><td>Body</td><td>${message.body}</td></tr>
-	<tr><td>From</td><td>***********</td></tr>
-	<tr><td>To</td><td>***********</td></tr>
+	<tr><td>From</td><td>${message.from}</td></tr>
+	<tr><td>To</td><td>${message.to}</td></tr>
 	<tr><td>Status</td><td>${message.status}</td></tr>
 
 	<tr><td>Subresource Uris</td><td>${message.subresourceUris}</td></tr>

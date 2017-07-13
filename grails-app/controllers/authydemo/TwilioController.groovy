@@ -1,7 +1,8 @@
 package authydemo
 
-import com.twilio.base.ResourceSet
-import com.twilio.rest.api.v2010.account.Message
+import com.twilio.twiml.Body
+import com.twilio.twiml.Message
+import com.twilio.twiml.MessagingResponse
 
 class TwilioController {
 
@@ -31,8 +32,7 @@ class TwilioController {
     }
 
     def messages() {
-        ResourceSet<Message> messages = twilioService.messages()
-        [messages: messages]
+        [messages: twilioService.messages()]
     }
 
     def messageDetails() {
@@ -42,8 +42,7 @@ class TwilioController {
             return
         }
 
-        Message message = twilioService.message(params.sid)
-        [message: message]
+        [message: twilioService.message(params.sid)]
     }
 
     def updateMessageBody() {
@@ -68,5 +67,21 @@ class TwilioController {
         twilioService.deleteMessage(params.sid)
         flash.message = "Message (${params.sid}) deleted successfully."
         redirect action: 'messages'
+    }
+
+    def voiceCallback() {
+        println "Voice = ${params}"
+
+        Message sms = new Message.Builder().body(new Body("Thanks for the call!")).build();
+        MessagingResponse twiml = new MessagingResponse.Builder().message(sms).build();
+        render contentType: "application/xml", text: twiml.toXml()
+    }
+
+    def messageCallback() {
+        println "Incomming message = ${params}"
+
+        Message sms = new Message.Builder().body(new Body("Thanks for the message!")).build();
+        MessagingResponse twiml = new MessagingResponse.Builder().message(sms).build();
+        render contentType: "application/xml", text: twiml.toXml()
     }
 }
