@@ -22,7 +22,7 @@ class TwilioController {
 
         String to = springSecurityService.currentUser.fullPhoneNumber
 
-        twilioService.sendMessage(to, params.message)
+        twilioService.sendMessage(to, params.message, params.url)
         flash.message = "Message send successfully to ${to}"
         redirect action: 'index'
     }
