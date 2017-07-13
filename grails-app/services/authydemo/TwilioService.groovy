@@ -1,6 +1,7 @@
 package authydemo
 
 import com.twilio.Twilio
+import com.twilio.base.ResourceSet
 import com.twilio.rest.api.v2010.account.Message
 import com.twilio.rest.api.v2010.account.MessageCreator
 import com.twilio.type.PhoneNumber
@@ -12,7 +13,7 @@ class TwilioService {
     def grailsApplication
 
     String sendMessage(String toPhoneNumber, String message, String url) {
-        Twilio.init(grailsApplication.config.authy.accountSID, grailsApplication.config.authy.authToken);
+        Twilio.init(grailsApplication.config.authy.accountSID, grailsApplication.config.authy.authToken)
 
         MessageCreator messageCreator = Message.creator(new PhoneNumber(toPhoneNumber),
                 new PhoneNumber(grailsApplication.config.authy.fromPhoneNumber), message)
@@ -21,9 +22,32 @@ class TwilioService {
             messageCreator.setMediaUrl(new URI(url))
         }
 
-        Message msg = messageCreator.create();
+        Message msg = messageCreator.create()
         println msg.sid
         println msg.status
         return msg.sid
+    }
+
+    def messages() {
+        Twilio.init(grailsApplication.config.authy.accountSID, grailsApplication.config.authy.authToken)
+        ResourceSet<Message> messages = Message.reader().read()
+        return messages
+    }
+
+    def message(String sid) {
+        Twilio.init(grailsApplication.config.authy.accountSID, grailsApplication.config.authy.authToken)
+        Message message = Message.fetcher(sid).fetch()
+        return message
+    }
+
+    def updateMessageBody(String sid) {
+        Twilio.init(grailsApplication.config.authy.accountSID, grailsApplication.config.authy.authToken)
+        Message message = Message.updater(sid, "").update();
+        return message
+    }
+
+    def deleteMessage(String sid) {
+        Twilio.init(grailsApplication.config.authy.accountSID, grailsApplication.config.authy.authToken)
+        Message.deleter(sid).delete()
     }
 }
