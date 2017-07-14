@@ -1,8 +1,6 @@
 package authydemo
 
-import com.twilio.twiml.Body
-import com.twilio.twiml.Message
-import com.twilio.twiml.MessagingResponse
+import com.twilio.twiml.*
 
 class TwilioController {
 
@@ -70,11 +68,16 @@ class TwilioController {
     }
 
     def voiceCallback() {
-        println "Voice = ${params}"
+        println "Incomming voice = ${params}"
 
-        Message sms = new Message.Builder().body(new Body("Thanks for the call!")).build();
-        MessagingResponse twiml = new MessagingResponse.Builder().message(sms).build();
-        render contentType: "application/xml", text: twiml.toXml()
+        Say say = new Say.Builder("Thanks for the call. Have a nice day!").voice(Say.Voice.ALICE).build()
+        VoiceResponse.Builder builder = new VoiceResponse.Builder().say(say)
+
+        Play play = new Play.Builder("https://demo.twilio.com/docs/classic.mp3").build()
+        builder.play(play);
+
+        VoiceResponse twiml = builder.build()
+        render contentType: "text/xml", text: twiml.toXml()
     }
 
     def messageCallback() {

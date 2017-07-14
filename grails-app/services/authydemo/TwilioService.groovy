@@ -32,8 +32,8 @@ class TwilioService {
     def messages() {
         Twilio.init(grailsApplication.config.authy.accountSID, grailsApplication.config.authy.authToken)
         MessageReader messageReader = Message.reader()
-//        messageReader.setTo(new PhoneNumber("+918826590094"))
-//        messageReader.setFrom(new PhoneNumber("+918826590094"))
+//        messageReader.setTo(new PhoneNumber(""))
+//        messageReader.setFrom(new PhoneNumber(""))
         ResourceSet<Message> messages = messageReader.read()
         return messages
     }
