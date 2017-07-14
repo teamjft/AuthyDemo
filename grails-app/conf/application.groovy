@@ -21,6 +21,7 @@ grails.plugin.springsecurity.controllerAnnotations.staticRules = [
     [pattern: '/twilio/voiceCallback',              access: ['permitAll']],
     [pattern: '/twilio/messageCallback',            access: ['permitAll']],
     [pattern: '/twilio/clickToCallFetchTwiML',      access: ['permitAll']],
+    [pattern: '/twilio/hangupResponse',             access: ['permitAll']],
     [pattern: '/**',                                access: 'isAuthenticated()']
 ]
 

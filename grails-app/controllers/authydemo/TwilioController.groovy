@@ -1,13 +1,16 @@
 package authydemo
 
 import com.twilio.Twilio
+import com.twilio.base.ResourceSet
 import com.twilio.rest.api.v2010.account.CallCreator
+import com.twilio.rest.api.v2010.account.Recording
 import com.twilio.twiml.*
 import com.twilio.type.PhoneNumber
 
 class TwilioController {
 
-    static allowedMethods = [sendMessage: 'POST', updateMessageBody: 'POST', deleteMessage: 'POST', clickToCallMakeCall: 'POST']
+    static allowedMethods = [sendMessage        : 'POST', updateMessageBody: 'POST', deleteMessage: 'POST',
+                             clickToCallMakeCall: 'POST', deleteRecording: 'POST']
 
     def springSecurityService
     def twilioService
@@ -73,14 +76,26 @@ class TwilioController {
     def voiceCallback() {
         println "Incomming voice = ${params}"
 
-        Say say = new Say.Builder("Thanks for the call. Have a nice day!").voice(Say.Voice.ALICE).build()
+        // Code to play "say" message and "play" recording
+        /*Say say = new Say.Builder("Thanks for the call. Have a nice day!").voice(Say.Voice.ALICE).build()
         VoiceResponse.Builder builder = new VoiceResponse.Builder().say(say)
-
         Play play = new Play.Builder("https://demo.twilio.com/docs/classic.mp3").build()
         builder.play(play);
-
         VoiceResponse twiml = builder.build()
-        render contentType: "text/xml", text: twiml.toXml()
+        render contentType: "text/xml", text: twiml.toXml()*/
+
+        // Code to record voice
+        Say say = new Say.Builder("Please record your message after the beep. Press star to end your recording.").build();
+        String action = g.createLink(controller: 'twilio', action: 'hangupResponse')
+        Record record = new Record.Builder().action(action).method(Method.POST).finishOnKey("*").build();
+        VoiceResponse voiceResponse = new VoiceResponse.Builder().say(say).record(record).build();
+        render contentType: "application/xml", text: voiceResponse.toXml()
+    }
+
+    def hangupResponse() {
+        Say say = new Say.Builder("Your recording has been saved. Good bye.").build();
+        VoiceResponse voiceResponse = new VoiceResponse.Builder().say(say).hangup(new Hangup()).build();
+        render contentType: "application/xml", text: voiceResponse.toXml()
     }
 
     def messageCallback() {
@@ -99,9 +114,9 @@ class TwilioController {
         if (params.firstPhoneNumber && params.secondPhoneNumber) {
             Twilio.init(grailsApplication.config.authy.accountSID, grailsApplication.config.authy.authToken)
 
+            String uri = g.createLink(controller: 'twilio', action: 'clickToCallFetchTwiML', absolute: true) + "?phoneNumber=${params.secondPhoneNumber}"
             CallCreator callCreator = new CallCreator(new PhoneNumber(params.firstPhoneNumber),
-                    new PhoneNumber(grailsApplication.config.authy.fromPhoneNumber),
-                    new URI("https://d3ec84ca.ngrok.io/twilio/clickToCallFetchTwiML?phoneNumber=${params.secondPhoneNumber}"));
+                    new PhoneNumber(grailsApplication.config.authy.fromPhoneNumber), new URI(uri));
 
             callCreator.create();
         } else {
@@ -116,4 +131,81 @@ class TwilioController {
         Say say = new Say.Builder("Congratulations you have selected for an amazing prize. Please hold the line, we are connecting you to our customer representative. Thanks!").build()
         render contentType: "application/xml", text: new VoiceResponse.Builder().say(say).dial(new Dial.Builder().number(number).build()).build().toXml()
     }
+
+    def recordings() {
+        Twilio.init(grailsApplication.config.authy.accountSID, grailsApplication.config.authy.authToken)
+        ResourceSet<Recording> recordings = Recording.reader().read();
+        [recordings: recordings]
+    }
+
+    def deleteRecording() {
+        if (!params.sid) {
+            flash.error = "Voice sid cannot be blank."
+            redirect action: 'recordings'
+            return
+        }
+
+        Twilio.init(grailsApplication.config.authy.accountSID, grailsApplication.config.authy.authToken)
+        Recording.deleter(params.sid).delete()
+
+        flash.message = "Recording (${params.sid}) deleted successfully."
+        redirect action: 'recordings'
+    }
+
+    /*def getXMLConnectResponse() {
+        Boolean muted = false;
+        Boolean moderator = false;
+        String digits = params.Digits
+
+        if (digits.equals("1")) {
+            muted = true;
+        } else if (digits.equals("3")) {
+            moderator = true;
+        }
+
+        String defaultMessage = "You have joined the conference.";
+        Say sayMessage = new Say.Builder(defaultMessage).build();
+
+        Conference conference = new Conference.Builder("RapidResponseRoom").waitUrl("http://twimlets.com/holdmusic?Bucket=com.twilio.music.ambient").muted(muted).startConferenceOnEnter(moderator).endConferenceOnExit(moderator).build();
+
+        Dial dial = new Dial.Builder().conference(conference).build();
+
+        VoiceResponse voiceResponse = new VoiceResponse.Builder().say(sayMessage).dial(dial).build();
+        render contentType: "application/xml", text: voiceResponse.toXml()
+    }
+
+    def getXMLJoinResponse() {
+        String message = "You are about to join the Rapid Response conference." + "Press 1 to join as a listener."
+        +"Press 2 to join as a speaker." + "Press 3 to join as the moderator.";
+
+        Say sayMessage = new Say.Builder(message).build();
+        Gather gather = new Gather.Builder().action("/conference/connect").method(Method.POST).say(sayMessage).build();
+
+        VoiceResponse voiceResponse = new VoiceResponse.Builder().gather(gather).build();
+        render contentType: "application/xml", text: voiceResponse.toXml()
+    }
+
+    def broadcastSend() {
+        Twilio.init(grailsApplication.config.authy.accountSID, grailsApplication.config.authy.authToken)
+
+        String numbers = params.numbers;
+        String recordingUrl = params.recording_url;
+        String[] parsedNumbers = numbers.split(",");
+        String url = request.requestURL.replace(0, request.requestURI.length() - 1, "") + "/broadcast/play?recording_url=" + recordingUrl;
+        String twilioNumber = grailsApplication.config.authy.fromPhoneNumber;
+
+        for (String number : parsedNumbers) {
+            try {
+                Call.creator(new PhoneNumber(number), new PhoneNumber(twilioNumber), new URI(url)).create();
+            } catch (TwilioException e) {
+                System.out.println("Twilio rest client error " + e.getLocalizedMessage());
+                System.out.println("Remember not to use localhost to access this app, use your ngrok URL");
+            } catch (URISyntaxException e) {
+                System.out.println(e.getLocalizedMessage());
+            }
+        }
+
+        render contentType: "application/json", text: [success: "success"] as JSON
+    }*/
+
 }

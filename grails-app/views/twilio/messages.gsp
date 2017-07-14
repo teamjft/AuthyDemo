@@ -27,7 +27,7 @@
 			<td>${message.status}</td>
 			<td>
 				<g:form controller="twilio" method="POST">
-					<g:hiddenField name="sid" value="${message?.sid}" />
+					<g:hiddenField name="sid" value="${message.sid}" />
 
 					<g:actionSubmit value="Erase Body" action="updateMessageBody" class="btn btn-default" />
 					<g:actionSubmit value="Delete" action="deleteMessage" class="btn btn-default" />

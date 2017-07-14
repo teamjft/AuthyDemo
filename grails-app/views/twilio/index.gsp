@@ -17,5 +17,7 @@
 <p><g:link controller="twilio" action="messages" class="btn btn-default nounderline">Sent Messages</g:link></p>
 
 <p><g:link controller="twilio" action="clickToCall" class="btn btn-default nounderline">Click To Call</g:link></p>
+
+<p><g:link controller="twilio" action="recordings" class="btn btn-default nounderline">Voice Recordings</g:link></p>
 </body>
 </html>
