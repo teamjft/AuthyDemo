@@ -16,11 +16,12 @@ grails.plugin.springsecurity.controllerAnnotations.staticRules = [
 
 	[pattern: '/**/favicon.ico', access: ['permitAll']],
 
-    [pattern: '/registration/verify',   access: 'isAuthenticated()'],
-    [pattern: '/registration/**',       access: ['permitAll']],
-    [pattern: '/twilio/voiceCallback',  access: ['permitAll']],
-    [pattern: '/twilio/messageCallback',access: ['permitAll']],
-    [pattern: '/**',                    access: 'isAuthenticated()']
+    [pattern: '/registration/verify',               access: 'isAuthenticated()'],
+    [pattern: '/registration/**',                   access: ['permitAll']],
+    [pattern: '/twilio/voiceCallback',              access: ['permitAll']],
+    [pattern: '/twilio/messageCallback',            access: ['permitAll']],
+    [pattern: '/twilio/clickToCallFetchTwiML',      access: ['permitAll']],
+    [pattern: '/**',                                access: 'isAuthenticated()']
 ]
 
 grails.plugin.springsecurity.filterChain.chainMap = [
