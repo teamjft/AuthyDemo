@@ -85,16 +85,54 @@ class TwilioController {
         render contentType: "text/xml", text: twiml.toXml()*/
 
         // Code to record voice
-        Say say = new Say.Builder("Please record your message after the beep. Press star to end your recording.").build();
+        /*Say say = new Say.Builder("Please record your message after the beep. Press star to end your recording.").build();
         String action = g.createLink(controller: 'twilio', action: 'hangupResponse')
         Record record = new Record.Builder().action(action).method(Method.POST).finishOnKey("*").build();
         VoiceResponse voiceResponse = new VoiceResponse.Builder().say(say).record(record).build();
+        render contentType: "application/xml", text: voiceResponse.toXml()*/
+
+
+        // Connect conference
+        String message = "You are about to join the Rapid Response conference. Press 1 to join as a listener. Press 2 to join as a speaker. Press 3 to join as the moderator.";
+
+        Say sayMessage = new Say.Builder(message).build();
+        Gather gather = new Gather.Builder().action("/twilio/hangupResponse").method(Method.POST).say(sayMessage).build();
+
+        VoiceResponse voiceResponse = new VoiceResponse.Builder().gather(gather).build();
         render contentType: "application/xml", text: voiceResponse.toXml()
     }
 
     def hangupResponse() {
-        Say say = new Say.Builder("Your recording has been saved. Good bye.").build();
+        /*Say say = new Say.Builder("Your recording has been saved. Good bye.").build();
         VoiceResponse voiceResponse = new VoiceResponse.Builder().say(say).hangup(new Hangup()).build();
+        render contentType: "application/xml", text: voiceResponse.toXml()*/
+
+
+        // Join conference
+        Boolean muted = false;
+        Boolean moderator = false;
+        String digits = params.Digits
+
+        if (digits.equals("1")) {
+            muted = true;
+        }
+        if (digits.equals("3")) {
+            moderator = true;
+        }
+
+        String defaultMessage = "You have joined the conference.";
+        Say sayMessage = new Say.Builder(defaultMessage).build();
+
+        Conference conference = new Conference.Builder("RapidResponseRoom")
+                .waitUrl("http://twimlets.com/holdmusic?Bucket=com.twilio.music.ambient")
+                .muted(muted)
+                .startConferenceOnEnter(moderator)
+                .endConferenceOnExit(moderator)
+                .build();
+
+        Dial dial = new Dial.Builder().conference(conference).build();
+
+        VoiceResponse voiceResponse = new VoiceResponse.Builder().say(sayMessage).dial(dial).build();
         render contentType: "application/xml", text: voiceResponse.toXml()
     }
 
@@ -151,61 +189,4 @@ class TwilioController {
         flash.message = "Recording (${params.sid}) deleted successfully."
         redirect action: 'recordings'
     }
-
-    /*def getXMLConnectResponse() {
-        Boolean muted = false;
-        Boolean moderator = false;
-        String digits = params.Digits
-
-        if (digits.equals("1")) {
-            muted = true;
-        } else if (digits.equals("3")) {
-            moderator = true;
-        }
-
-        String defaultMessage = "You have joined the conference.";
-        Say sayMessage = new Say.Builder(defaultMessage).build();
-
-        Conference conference = new Conference.Builder("RapidResponseRoom").waitUrl("http://twimlets.com/holdmusic?Bucket=com.twilio.music.ambient").muted(muted).startConferenceOnEnter(moderator).endConferenceOnExit(moderator).build();
-
-        Dial dial = new Dial.Builder().conference(conference).build();
-
-        VoiceResponse voiceResponse = new VoiceResponse.Builder().say(sayMessage).dial(dial).build();
-        render contentType: "application/xml", text: voiceResponse.toXml()
-    }
-
-    def getXMLJoinResponse() {
-        String message = "You are about to join the Rapid Response conference." + "Press 1 to join as a listener."
-        +"Press 2 to join as a speaker." + "Press 3 to join as the moderator.";
-
-        Say sayMessage = new Say.Builder(message).build();
-        Gather gather = new Gather.Builder().action("/conference/connect").method(Method.POST).say(sayMessage).build();
-
-        VoiceResponse voiceResponse = new VoiceResponse.Builder().gather(gather).build();
-        render contentType: "application/xml", text: voiceResponse.toXml()
-    }
-
-    def broadcastSend() {
-        Twilio.init(grailsApplication.config.authy.accountSID, grailsApplication.config.authy.authToken)
-
-        String numbers = params.numbers;
-        String recordingUrl = params.recording_url;
-        String[] parsedNumbers = numbers.split(",");
-        String url = request.requestURL.replace(0, request.requestURI.length() - 1, "") + "/broadcast/play?recording_url=" + recordingUrl;
-        String twilioNumber = grailsApplication.config.authy.fromPhoneNumber;
-
-        for (String number : parsedNumbers) {
-            try {
-                Call.creator(new PhoneNumber(number), new PhoneNumber(twilioNumber), new URI(url)).create();
-            } catch (TwilioException e) {
-                System.out.println("Twilio rest client error " + e.getLocalizedMessage());
-                System.out.println("Remember not to use localhost to access this app, use your ngrok URL");
-            } catch (URISyntaxException e) {
-                System.out.println(e.getLocalizedMessage());
-            }
-        }
-
-        render contentType: "application/json", text: [success: "success"] as JSON
-    }*/
-
 }
